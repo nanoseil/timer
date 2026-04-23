@@ -206,18 +206,22 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
       return
     }
 
-    const alarmThresholdsWithEnd = [...snapshot.alarmElapsedMs, snapshot.totalDurationMs]
-    for (const elapsedMs of alarmThresholdsWithEnd) {
+    const evaluateThreshold = (elapsedMs: number) => {
       const thresholdRemainingMs = Math.max(0, snapshot.totalDurationMs - elapsedMs)
       const hasCrossed =
         previousRemainingMs > thresholdRemainingMs &&
         remainingMs <= thresholdRemainingMs
       if (!hasCrossed || firedElapsedMsRef.current.has(elapsedMs)) {
-        continue
+        return
       }
       firedElapsedMsRef.current.add(elapsedMs)
       playAlarmSound()
     }
+
+    for (const elapsedMs of snapshot.alarmElapsedMs) {
+      evaluateThreshold(elapsedMs)
+    }
+    evaluateThreshold(snapshot.totalDurationMs)
 
     previousRemainingMsRef.current = remainingMs
   }, [remainingMs, snapshot])
