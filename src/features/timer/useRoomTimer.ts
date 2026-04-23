@@ -19,6 +19,35 @@ function computeRemainingMs(snapshot: TimerSnapshot, nowMs: number): number {
   return Math.max(0, snapshot.remainingMs - Math.max(0, nowMs - snapshot.serverNowMs))
 }
 
+function playAlarmSound() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const AudioContextCtor = window.AudioContext
+  if (!AudioContextCtor) {
+    return
+  }
+
+  try {
+    const context = new AudioContextCtor()
+    const oscillator = context.createOscillator()
+    const gain = context.createGain()
+    oscillator.type = 'square'
+    oscillator.frequency.value = 880
+    gain.gain.value = 0.2
+    oscillator.connect(gain)
+    gain.connect(context.destination)
+    oscillator.start()
+    oscillator.stop(context.currentTime + 0.2)
+    oscillator.addEventListener('ended', () => {
+      context.close().catch(() => {})
+    })
+  } catch {
+    // ignore
+  }
+}
+
 export type ConnectionStatus = 'connecting' | 'open' | 'closed'
 
 export function useRoomTimer(roomId: string, role: ClientRole) {
@@ -28,6 +57,9 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
   const [nowMs, setNowMs] = useState(() => Date.now())
   const socketRef = useRef<WebSocket | null>(null)
   const reconnectTimerRef = useRef<number | null>(null)
+  const previousRemainingMsRef = useRef<number | null>(null)
+  const wasRunningRef = useRef(false)
+  const firedElapsedMsRef = useRef<Set<number>>(new Set())
 
   const clearReconnectTimer = useCallback(() => {
     if (reconnectTimerRef.current !== null) {
@@ -143,6 +175,51 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
     return computeRemainingMs(snapshot, nowMs)
   }, [snapshot, nowMs])
 
+  useEffect(() => {
+    if (!snapshot || remainingMs === null) {
+      return
+    }
+
+    if (!snapshot.isRunning && snapshot.remainingMs === snapshot.totalDurationMs) {
+      firedElapsedMsRef.current.clear()
+    }
+
+    const startedFresh =
+      snapshot.isRunning &&
+      !wasRunningRef.current &&
+      snapshot.remainingMs === snapshot.totalDurationMs
+    if (startedFresh) {
+      firedElapsedMsRef.current.clear()
+    }
+    wasRunningRef.current = snapshot.isRunning
+
+    if (!snapshot.isRunning) {
+      previousRemainingMsRef.current = remainingMs
+      return
+    }
+
+    const previousRemainingMs = previousRemainingMsRef.current
+    if (previousRemainingMs === null) {
+      previousRemainingMsRef.current = remainingMs
+      return
+    }
+
+    const alarmElapsedMs = [...snapshot.alarmElapsedMs, snapshot.totalDurationMs]
+    for (const elapsedMs of alarmElapsedMs) {
+      const thresholdRemainingMs = Math.max(0, snapshot.totalDurationMs - elapsedMs)
+      const hasCrossed =
+        previousRemainingMs > thresholdRemainingMs &&
+        remainingMs <= thresholdRemainingMs
+      if (!hasCrossed || firedElapsedMsRef.current.has(elapsedMs)) {
+        continue
+      }
+      firedElapsedMsRef.current.add(elapsedMs)
+      playAlarmSound()
+    }
+
+    previousRemainingMsRef.current = remainingMs
+  }, [remainingMs, snapshot])
+
   return {
     snapshot,
     remainingMs,
@@ -151,4 +228,3 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
     sendCommand,
   }
 }
-

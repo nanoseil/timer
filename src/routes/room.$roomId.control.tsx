@@ -15,9 +15,33 @@ function ControlPage() {
     'control',
   )
   const [minutesInput, setMinutesInput] = useState('5')
+  const [alarmMinutesInput, setAlarmMinutesInput] = useState('')
 
   const parsedMinutes = useMemo(() => Number(minutesInput), [minutesInput])
   const canSetDuration = Number.isFinite(parsedMinutes) && parsedMinutes > 0
+  const parsedAlarmMinutes = useMemo(() => {
+    const tokens = alarmMinutesInput
+      .split(',')
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0)
+    if (tokens.length === 0) {
+      return [] as number[]
+    }
+
+    const parsed = tokens.map((value) => Number(value))
+    if (parsed.some((value) => !Number.isFinite(value) || value <= 0)) {
+      return null
+    }
+    return parsed.map((minutes) => Math.round(minutes * 60_000))
+  }, [alarmMinutesInput])
+  const canSetAlarms = parsedAlarmMinutes !== null
+  const activeAlarmLabel = useMemo(() => {
+    if (!snapshot) {
+      return '終了時'
+    }
+    const labels = snapshot.alarmElapsedMs.map((elapsedMs) => `${elapsedMs / 60_000}分`)
+    return [...labels, '終了時'].join(' / ')
+  }, [snapshot])
   const displayUrl = useMemo(() => {
     if (typeof window === 'undefined') {
       return ''
@@ -104,6 +128,40 @@ function ControlPage() {
                     sendCommand({
                       type: 'set-duration',
                       durationMs: Math.round(parsedMinutes * 60_000),
+                    })
+                  }
+                  className="border border-slate-300 bg-white px-5 py-3 text-lg font-bold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                >
+                  反映
+                </button>
+              </div>
+            </section>
+
+            <section className="py-5">
+              <h2 className="m-0 text-base font-semibold text-slate-900 dark:text-slate-100">
+                鳴動タイミングを設定
+              </h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                カンマ区切りで分を指定します（例: 5,8）。終了時は常に鳴動します。
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                現在: {activeAlarmLabel}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <input
+                  value={alarmMinutesInput}
+                  onChange={(event) => setAlarmMinutesInput(event.target.value)}
+                  inputMode="decimal"
+                  placeholder="例: 5,8"
+                  className="w-36 border border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 outline-none ring-cyan-200 transition focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-cyan-500/40"
+                />
+                <button
+                  type="button"
+                  disabled={!canSetAlarms}
+                  onClick={() =>
+                    sendCommand({
+                      type: 'set-alarms',
+                      elapsedMs: parsedAlarmMinutes ?? [],
                     })
                   }
                   className="border border-slate-300 bg-white px-5 py-3 text-lg font-bold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"

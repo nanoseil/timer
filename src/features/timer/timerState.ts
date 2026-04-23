@@ -3,6 +3,7 @@ export interface RoomTimerState {
   remainingMs: number
   isRunning: boolean
   startedAtMs: number | null
+  alarmElapsedMs: number[]
   revision: number
 }
 
@@ -10,6 +11,7 @@ export interface TimerSnapshot {
   totalDurationMs: number
   remainingMs: number
   isRunning: boolean
+  alarmElapsedMs: number[]
   revision: number
   serverNowMs: number
 }
@@ -24,6 +26,7 @@ export function createDefaultTimerState(): RoomTimerState {
     remainingMs: DEFAULT_DURATION_MS,
     isRunning: false,
     startedAtMs: null,
+    alarmElapsedMs: [],
     revision: 0,
   }
 }
@@ -36,6 +39,27 @@ export function clampDurationMs(durationMs: number): number {
 export function clampRemainingMs(remainingMs: number): number {
   const safe = Number.isFinite(remainingMs) ? Math.trunc(remainingMs) : 0
   return Math.min(MAX_DURATION_MS, Math.max(0, safe))
+}
+
+export function normalizeAlarmElapsedMs(
+  alarmElapsedMs: number[],
+  totalDurationMs: number,
+): number[] {
+  const unique = new Set<number>()
+
+  for (const elapsedMs of alarmElapsedMs) {
+    if (!Number.isFinite(elapsedMs)) {
+      continue
+    }
+
+    const safeElapsedMs = Math.trunc(elapsedMs)
+    if (safeElapsedMs <= 0 || safeElapsedMs >= totalDurationMs) {
+      continue
+    }
+    unique.add(safeElapsedMs)
+  }
+
+  return Array.from(unique).sort((a, b) => a - b)
 }
 
 export function getRemainingMsAt(
@@ -72,6 +96,7 @@ export type TimerCommand =
   | { type: 'pause' }
   | { type: 'reset' }
   | { type: 'set-duration'; durationMs: number }
+  | { type: 'set-alarms'; elapsedMs: number[] }
   | { type: 'add-time'; deltaMs: number }
 
 export function applyTimerCommand(
@@ -125,10 +150,16 @@ export function applyTimerCommand(
     }
     case 'set-duration': {
       const durationMs = clampDurationMs(command.durationMs)
+      const alarmElapsedMs = normalizeAlarmElapsedMs(
+        normalized.alarmElapsedMs,
+        durationMs,
+      )
       if (
         !normalized.isRunning &&
         normalized.totalDurationMs === durationMs &&
-        normalized.remainingMs === durationMs
+        normalized.remainingMs === durationMs &&
+        normalized.alarmElapsedMs.length === alarmElapsedMs.length &&
+        normalized.alarmElapsedMs.every((value, index) => value === alarmElapsedMs[index])
       ) {
         return normalized
       }
@@ -139,6 +170,25 @@ export function applyTimerCommand(
         remainingMs: durationMs,
         isRunning: false,
         startedAtMs: null,
+        alarmElapsedMs,
+        revision: normalized.revision + 1,
+      }
+    }
+    case 'set-alarms': {
+      const alarmElapsedMs = normalizeAlarmElapsedMs(
+        command.elapsedMs,
+        normalized.totalDurationMs,
+      )
+      if (
+        normalized.alarmElapsedMs.length === alarmElapsedMs.length &&
+        normalized.alarmElapsedMs.every((value, index) => value === alarmElapsedMs[index])
+      ) {
+        return normalized
+      }
+
+      return {
+        ...normalized,
+        alarmElapsedMs,
         revision: normalized.revision + 1,
       }
     }
@@ -181,12 +231,13 @@ export function createTimerSnapshot(
 
   return {
     nextState,
-    snapshot: {
-      totalDurationMs: nextState.totalDurationMs,
-      remainingMs,
-      isRunning: nextState.isRunning,
-      revision: nextState.revision,
-      serverNowMs: nowMs,
-    },
+      snapshot: {
+        totalDurationMs: nextState.totalDurationMs,
+        remainingMs,
+        isRunning: nextState.isRunning,
+        alarmElapsedMs: nextState.alarmElapsedMs,
+        revision: nextState.revision,
+        serverNowMs: nowMs,
+      },
   }
 }

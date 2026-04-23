@@ -33,6 +33,11 @@ function isTimerCommand(value: unknown): value is TimerCommand {
       return true
     case 'set-duration':
       return typeof value.durationMs === 'number'
+    case 'set-alarms':
+      return (
+        Array.isArray(value.elapsedMs) &&
+        value.elapsedMs.every((elapsedMs) => typeof elapsedMs === 'number')
+      )
     case 'add-time':
       return typeof value.deltaMs === 'number'
     default:
@@ -61,4 +66,3 @@ export function formatDuration(remainingMs: number): string {
   const seconds = totalSeconds % 60
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
-

@@ -39,5 +39,42 @@ describe('timer state transitions', () => {
     expect(snapshot.isRunning).toBe(false)
     expect(nextState.isRunning).toBe(false)
   })
-})
 
+  test('set-alarms stores sorted unique elapsed timings', () => {
+    const base = createDefaultTimerState()
+    const tenMinutes = applyTimerCommand(
+      base,
+      { type: 'set-duration', durationMs: 10 * 60_000 },
+      0,
+    )
+    const changed = applyTimerCommand(
+      tenMinutes,
+      {
+        type: 'set-alarms',
+        elapsedMs: [8 * 60_000, 5 * 60_000, 8 * 60_000, -1_000, 0],
+      },
+      1_000,
+    )
+
+    expect(changed.alarmElapsedMs).toEqual([5 * 60_000, 8 * 60_000])
+  })
+
+  test('set-duration drops alarm timings beyond new total duration', () => {
+    const base = createDefaultTimerState()
+    const withAlarms = applyTimerCommand(
+      base,
+      {
+        type: 'set-alarms',
+        elapsedMs: [2 * 60_000, 4 * 60_000],
+      },
+      0,
+    )
+    const shortened = applyTimerCommand(
+      withAlarms,
+      { type: 'set-duration', durationMs: 3 * 60_000 },
+      1_000,
+    )
+
+    expect(shortened.alarmElapsedMs).toEqual([2 * 60_000])
+  })
+})
