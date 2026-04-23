@@ -1,86 +1,105 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/')({ component: App })
 
+function createRoomId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID().slice(0, 8)
+  }
+  return Math.random().toString(36).slice(2, 10)
+}
+
+function sanitizeRoomId(raw: string): string {
+  return raw.trim().replaceAll('/', '-').slice(0, 64)
+}
+
 function App() {
+  const [newRoomId, setNewRoomId] = useState<string>('')
+  const [joinRoomId, setJoinRoomId] = useState<string>('')
+
+  const cleanJoinRoomId = sanitizeRoomId(joinRoomId)
+  const cleanNewRoomId = sanitizeRoomId(newRoomId)
+
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">TanStack Start Base Template</p>
-        <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          Start simple, ship quickly.
+    <main className="mx-auto w-full max-w-3xl px-4 py-10">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+        <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
+          Presentation Timer
         </h1>
-        <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
-          This base starter intentionally keeps things light: two routes, clean
-          structure, and the essentials you need to build from scratch.
+        <p className="mb-6 text-base text-slate-600 dark:text-slate-300">
+          ルームを作成または参加して、表示端末と操作端末を開いてください。
         </p>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/about"
-            className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-5 py-2.5 text-sm font-semibold text-[var(--lagoon-deep)] no-underline transition hover:-translate-y-0.5 hover:bg-[rgba(79,184,178,0.24)]"
-          >
-            About This Starter
-          </a>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-5 py-2.5 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[rgba(23,58,64,0.35)]"
-          >
-            Router Guide
-          </a>
-        </div>
-      </section>
-
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          [
-            'Type-Safe Routing',
-            'Routes and links stay in sync across every page.',
-          ],
-          [
-            'Server Functions',
-            'Call server code from your UI without creating API boilerplate.',
-          ],
-          [
-            'Streaming by Default',
-            'Ship progressively rendered responses for faster experiences.',
-          ],
-          [
-            'Tailwind Native',
-            'Design quickly with utility-first styling and reusable tokens.',
-          ],
-        ].map(([title, desc], index) => (
-          <article
-            key={title}
-            className="island-shell feature-card rise-in rounded-2xl p-5"
-            style={{ animationDelay: `${index * 90 + 80}ms` }}
-          >
-            <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">
-              {title}
+        <div className="grid w-full gap-4 md:grid-cols-2">
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+            <h2 className="m-0 text-base font-semibold text-slate-900 dark:text-slate-100">
+              ルームを作成
             </h2>
-            <p className="m-0 text-sm text-[var(--sea-ink-soft)]">{desc}</p>
-          </article>
-        ))}
-      </section>
+            <p className="mb-4 mt-2 text-sm text-slate-600 dark:text-slate-300">
+              新しいルームIDを作成して、表示・操作リンクを共有します。
+            </p>
+            <button
+              type="button"
+              onClick={() => setNewRoomId(createRoomId())}
+              className="rounded-full border border-cyan-300 bg-cyan-100 px-4 py-2 text-sm font-semibold text-cyan-800 transition hover:-translate-y-0.5 hover:bg-cyan-200 dark:border-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-200 dark:hover:bg-cyan-500/30"
+            >
+              ルームIDを生成
+            </button>
+            {cleanNewRoomId ? (
+              <div className="mt-4 space-y-2 text-sm">
+                <p className="m-0 text-slate-600 dark:text-slate-300">
+                  ルームID: <code>{cleanNewRoomId}</code>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={`/room/${cleanNewRoomId}/display`}
+                    className="rounded-full border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800 no-underline transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    表示画面を開く
+                  </a>
+                  <a
+                    href={`/room/${cleanNewRoomId}/control`}
+                    className="rounded-full border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-800 no-underline transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    操作画面を開く
+                  </a>
+                </div>
+              </div>
+            ) : null}
+          </section>
 
-      <section className="island-shell mt-8 rounded-2xl p-6">
-        <p className="island-kicker mb-2">Quick Start</p>
-        <ul className="m-0 list-disc space-y-2 pl-5 text-sm text-[var(--sea-ink-soft)]">
-          <li>
-            Edit <code>src/routes/index.tsx</code> to customize the home page.
-          </li>
-          <li>
-            Update <code>src/components/Header.tsx</code> and{' '}
-            <code>src/components/Footer.tsx</code> for brand links.
-          </li>
-          <li>
-            Add routes in <code>src/routes</code> and tweak visual tokens in{' '}
-            <code>src/styles.css</code>.
-          </li>
-        </ul>
+          <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+            <h2 className="m-0 text-base font-semibold text-slate-900 dark:text-slate-100">
+              既存ルームに参加
+            </h2>
+            <p className="mb-4 mt-2 text-sm text-slate-600 dark:text-slate-300">
+              共有されたルームIDを入力して接続します。
+            </p>
+            <label className="mb-2 block text-sm font-semibold text-slate-900 dark:text-slate-100">
+              ルームID
+            </label>
+            <input
+              value={joinRoomId}
+              onChange={(event) => setJoinRoomId(event.target.value)}
+              placeholder="例: 9f2a4b1c"
+              className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-cyan-200 transition focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-cyan-500/40"
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a
+                href={cleanJoinRoomId ? `/room/${cleanJoinRoomId}/display` : '#'}
+                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 no-underline transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+              >
+                表示画面へ
+              </a>
+              <a
+                href={cleanJoinRoomId ? `/room/${cleanJoinRoomId}/control` : '#'}
+                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 no-underline transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+              >
+                操作画面へ
+              </a>
+            </div>
+          </section>
+        </div>
       </section>
     </main>
   )

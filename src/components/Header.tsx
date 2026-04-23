@@ -3,15 +3,15 @@ import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
-      <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+      <nav className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
         <h2 className="m-0 flex-shrink-0 text-base font-semibold tracking-tight">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(30,90,72,0.08)] sm:px-4 sm:py-2"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 no-underline shadow-sm sm:px-4 sm:py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
           >
-            <span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
-            TanStack Start
+            <span className="h-2 w-2 rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400" />
+            Presentation Timer
           </Link>
         </h2>
 
@@ -20,7 +20,7 @@ export default function Header() {
             href="https://x.com/tan_stack"
             target="_blank"
             rel="noreferrer"
-            className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
+            className="hidden rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:block dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <span className="sr-only">Follow TanStack on X</span>
             <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
@@ -34,7 +34,7 @@ export default function Header() {
             href="https://github.com/TanStack"
             target="_blank"
             rel="noreferrer"
-            className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
+            className="hidden rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:block dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
             <span className="sr-only">Go to TanStack GitHub</span>
             <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
@@ -51,26 +51,24 @@ export default function Header() {
         <div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-2 sm:w-auto sm:flex-nowrap sm:pb-0">
           <Link
             to="/"
-            className="nav-link"
-            activeProps={{ className: 'nav-link is-active' }}
+            className="text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+            activeProps={{
+              className:
+                'text-cyan-700 underline decoration-2 underline-offset-4 dark:text-cyan-300',
+            }}
           >
             Home
           </Link>
           <Link
             to="/about"
-            className="nav-link"
-            activeProps={{ className: 'nav-link is-active' }}
+            className="text-slate-500 transition hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+            activeProps={{
+              className:
+                'text-cyan-700 underline decoration-2 underline-offset-4 dark:text-cyan-300',
+            }}
           >
             About
           </Link>
-          <a
-            href="https://tanstack.com/start/latest/docs/framework/react/overview"
-            className="nav-link"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Docs
-          </a>
         </div>
       </nav>
     </header>
