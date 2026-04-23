@@ -13,6 +13,12 @@
 	"observability": {
 		"enabled": true
 	},
+	"routes": [
+		{
+			"custom_domain": true,
+			"pattern": "timer.nanoseil.com"
+		}
+	],
 	"upload_source_maps": true,
 	"durable_objects": {
 		"bindings": [
