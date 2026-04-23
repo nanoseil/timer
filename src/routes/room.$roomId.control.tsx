@@ -25,7 +25,7 @@ function ControlPage() {
       .map((part) => part.trim())
       .filter((part) => part.length > 0)
     if (tokens.length === 0) {
-      return [] as number[]
+      return []
     }
 
     const parsed = tokens.map((value) => Number(value))

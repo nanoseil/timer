@@ -33,7 +33,7 @@ function playAlarmSound() {
     const context = new AudioContextCtor()
     const oscillator = context.createOscillator()
     const gain = context.createGain()
-    oscillator.type = 'square'
+    oscillator.type = 'sine'
     oscillator.frequency.value = 880
     gain.gain.value = 0.2
     oscillator.connect(gain)
@@ -41,7 +41,9 @@ function playAlarmSound() {
     oscillator.start()
     oscillator.stop(context.currentTime + 0.2)
     oscillator.addEventListener('ended', () => {
-      context.close().catch(() => {})
+      context.close().catch(() => {
+        // ignore close failures; alarm playback already finished
+      })
     })
   } catch {
     // ignore
