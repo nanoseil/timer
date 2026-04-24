@@ -4,6 +4,7 @@ import {
     applyTimerCommand,
     createDefaultTimerState,
     createTimerSnapshot,
+    normalizeAlarmElapsedMs,
     type RoomTimerState,
 } from '#/features/timer/timerState'
 import { DurableObject } from 'cloudflare:workers'
@@ -35,6 +36,9 @@ function isRoomTimerState(value: unknown): value is RoomTimerState {
         typeof candidate.remainingMs === 'number' &&
         typeof candidate.isRunning === 'boolean' &&
         (typeof candidate.startedAtMs === 'number' || candidate.startedAtMs === null) &&
+        (candidate.alarmElapsedMs === undefined ||
+            (Array.isArray(candidate.alarmElapsedMs) &&
+                candidate.alarmElapsedMs.every((elapsedMs) => typeof elapsedMs === 'number'))) &&
         typeof candidate.revision === 'number'
     )
 }
@@ -48,7 +52,13 @@ export class TimerHandler extends DurableObject<Env> {
         this.ctx.blockConcurrencyWhile(async () => {
             const stored = await this.ctx.storage.get<unknown>(TIMER_STATE_KEY)
             if (isRoomTimerState(stored)) {
-                this.timerState = stored
+                this.timerState = {
+                    ...stored,
+                    alarmElapsedMs: normalizeAlarmElapsedMs(
+                        stored.alarmElapsedMs ?? [],
+                        stored.totalDurationMs,
+                    ),
+                }
             }
         })
     }
