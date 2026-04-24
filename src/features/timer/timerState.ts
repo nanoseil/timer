@@ -74,13 +74,6 @@ export function getRemainingMsAt(
   return state.remainingMs - elapsedMs
 }
 
-export function normalizeTimerState(
-  state: RoomTimerState,
-  _nowMs: number,
-): RoomTimerState {
-  return state
-}
-
 export type TimerCommand =
   | { type: 'start' }
   | { type: 'pause' }
@@ -94,7 +87,7 @@ export function applyTimerCommand(
   command: TimerCommand,
   nowMs: number,
 ): RoomTimerState {
-  const normalized = normalizeTimerState(state, nowMs)
+  const normalized = state
 
   switch (command.type) {
     case 'start': {
@@ -216,17 +209,16 @@ export function createTimerSnapshot(
   state: RoomTimerState,
   nowMs: number,
 ): { nextState: RoomTimerState; snapshot: TimerSnapshot } {
-  const nextState = normalizeTimerState(state, nowMs)
-  const remainingMs = getRemainingMsAt(nextState, nowMs)
+  const remainingMs = getRemainingMsAt(state, nowMs)
 
   return {
-    nextState,
+    nextState: state,
       snapshot: {
-        totalDurationMs: nextState.totalDurationMs,
+        totalDurationMs: state.totalDurationMs,
         remainingMs,
-        isRunning: nextState.isRunning,
-        alarmElapsedMs: nextState.alarmElapsedMs,
-        revision: nextState.revision,
+        isRunning: state.isRunning,
+        alarmElapsedMs: state.alarmElapsedMs,
+        revision: state.revision,
         serverNowMs: nowMs,
       },
   }
