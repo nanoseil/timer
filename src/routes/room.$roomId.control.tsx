@@ -170,7 +170,7 @@ function ControlPage() {
               </div>
               <div className="relative h-10 rounded bg-slate-200 dark:bg-slate-700">
                 <div
-                  className="h-10 rounded-full bg-cyan-500/60 transition-[width] duration-200 dark:bg-cyan-400/70"
+                  className="h-10 rounded bg-cyan-500/60 transition-[width] duration-200 dark:bg-cyan-400/70"
                   style={{ width: `${timelineState?.progressPercent ?? 0}%` }}
                 />
                 {timelineState?.alarmMarkers.map((marker) => (
