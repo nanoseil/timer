@@ -8,6 +8,43 @@ export const Route = createFileRoute('/room/$roomId/control')({
   component: ControlPage,
 })
 
+function parseDurationInputToMs(input: string): number | null {
+  const trimmed = input.trim()
+  if (trimmed.length === 0) {
+    return null
+  }
+
+  if (trimmed.includes(':')) {
+    const parts = trimmed.split(':')
+    if (parts.length !== 2) {
+      return null
+    }
+
+    const [minutesPart, secondsPart] = parts
+    if (!/^\d+$/.test(minutesPart) || !/^\d{1,2}$/.test(secondsPart)) {
+      return null
+    }
+
+    const minutes = Number(minutesPart)
+    const seconds = Number(secondsPart)
+    if (!Number.isFinite(minutes) || !Number.isFinite(seconds) || seconds >= 60) {
+      return null
+    }
+
+    const durationMs = (minutes * 60 + seconds) * 1000
+    return durationMs > 0 ? durationMs : null
+  }
+
+  if (!/^\d+$/.test(trimmed)) {
+    return null
+  }
+  const minutes = Number(trimmed)
+  if (!Number.isFinite(minutes) || minutes <= 0) {
+    return null
+  }
+  return minutes * 60_000
+}
+
 function ControlPage() {
   const { roomId } = Route.useParams()
   const { remainingMs, snapshot, status, error, sendCommand } = useRoomTimer(
@@ -17,8 +54,11 @@ function ControlPage() {
   const [minutesInput, setMinutesInput] = useState('5')
   const [alarmMinuteInputs, setAlarmMinuteInputs] = useState([''])
 
-  const parsedMinutes = useMemo(() => Number(minutesInput), [minutesInput])
-  const canSetDuration = Number.isFinite(parsedMinutes) && parsedMinutes > 0
+  const parsedDurationMs = useMemo(
+    () => parseDurationInputToMs(minutesInput),
+    [minutesInput],
+  )
+  const canSetDuration = parsedDurationMs !== null
   const parsedAlarmMinutes = useMemo(() => {
     const parsed: number[] = []
     for (const alarmMinuteInput of alarmMinuteInputs) {
@@ -26,11 +66,11 @@ function ControlPage() {
       if (trimmed.length === 0) {
         continue
       }
-      const minutes = Number(trimmed)
-      if (!Number.isFinite(minutes) || minutes <= 0) {
+      const elapsedMs = parseDurationInputToMs(trimmed)
+      if (elapsedMs === null) {
         return null
       }
-      parsed.push(Math.round(minutes * 60_000))
+      parsed.push(elapsedMs)
     }
     return parsed
   }, [alarmMinuteInputs])
@@ -65,7 +105,7 @@ function ControlPage() {
     if (!snapshot) {
       return '終了時'
     }
-    const labels = snapshot.alarmElapsedMs.map((elapsedMs) => `${elapsedMs / 60_000}分`)
+    const labels = snapshot.alarmElapsedMs.map((elapsedMs) => formatDuration(elapsedMs))
     return [...labels, '終了時'].join(' / ')
   }, [snapshot])
   const timelineState = useMemo(() => {
@@ -138,7 +178,7 @@ function ControlPage() {
                     key={marker.elapsedMs}
                     className="absolute top-1/2 h-10 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-500 bg-amber-300 dark:border-amber-300 dark:bg-amber-200"
                     style={{ left: `${marker.progressPercent}%` }}
-                    title={`${marker.elapsedMs / 60_000}分`}
+                    title={formatDuration(marker.elapsedMs)}
                   />
                 ))}
                 <div
@@ -206,17 +246,17 @@ function ControlPage() {
                 <input
                   value={minutesInput}
                   onChange={(event) => setMinutesInput(event.target.value)}
-                  inputMode="decimal"
+                  inputMode="text"
+                  placeholder="例: 05:00 (または 5分)"
                   className="w-36 border border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 outline-none ring-cyan-200 transition focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-cyan-500/40"
                 />
-                <span className="text-base text-slate-600 dark:text-slate-300">分</span>
                 <button
                   type="button"
                   disabled={!canSetDuration}
                   onClick={() =>
                     sendCommand({
                       type: 'set-duration',
-                      durationMs: Math.round(parsedMinutes * 60_000),
+                      durationMs: parsedDurationMs ?? 0,
                     })
                   }
                   className="border border-slate-300 bg-white px-5 py-3 text-lg font-bold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
@@ -224,6 +264,9 @@ function ControlPage() {
                   反映
                 </button>
               </div>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+                `mm:ss`
+              </p>
             </section>
 
             <section className="py-5">
@@ -231,10 +274,10 @@ function ControlPage() {
                 鳴動タイミングを設定
               </h2>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                必要な分だけ入力欄を追加して分を指定します。終了時は常に鳴動します。
+                必要なだけ入力欄を追加して鳴動タイミングを指定します。終了時は常に鳴動します。
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                入力欄のEnterまたはフォーカス解除で反映します。
+                `mm:ss`
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 現在: {activeAlarmLabel}
@@ -252,11 +295,10 @@ function ControlPage() {
                           applyAlarmSettings()
                         }
                       }}
-                      inputMode="decimal"
-                      placeholder="例: 5"
+                      inputMode="text"
+                      placeholder="例: 03:30"
                       className="w-36 border border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 outline-none ring-cyan-200 transition focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-cyan-500/40"
                     />
-                    <span className="text-base text-slate-600 dark:text-slate-300">分</span>
                     <button
                       type="button"
                       disabled={alarmMinuteInputs.length <= 1}
