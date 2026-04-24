@@ -16,7 +16,7 @@ function computeRemainingMs(snapshot: TimerSnapshot, nowMs: number): number {
   if (!snapshot.isRunning) {
     return snapshot.remainingMs
   }
-  return Math.max(0, snapshot.remainingMs - Math.max(0, nowMs - snapshot.serverNowMs))
+  return snapshot.remainingMs - Math.max(0, nowMs - snapshot.serverNowMs)
 }
 
 function playAlarmSound() {

@@ -195,7 +195,7 @@ function ControlPage() {
 
         <div className="grid flex-1 gap-6 pt-6 xl:grid-cols-[2fr_1fr]">
           <section className="sm:pr-8 xl:border-r xl:border-slate-300 xl:pr-6 xl:dark:border-slate-700">
-            <p className="text-center text-[18vw] leading-none font-extrabold tracking-tight text-slate-900 tabular-nums sm:text-[10rem] xl:text-[11rem] dark:text-slate-100">
+            <p className={`text-center text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[10rem] xl:text-[11rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
               {remainingMs === null ? '--:--' : formatDuration(remainingMs)}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5">

@@ -29,15 +29,15 @@ describe('timer state transitions', () => {
     expect(changed.remainingMs).toBe(90_000)
   })
 
-  test('running timer auto-clamps at zero in snapshot', () => {
+  test('running timer continues past zero in snapshot', () => {
     const base = createDefaultTimerState()
     const short = applyTimerCommand(base, { type: 'set-duration', durationMs: 20_000 }, 0)
     const started = applyTimerCommand(short, { type: 'start' }, 1_000)
     const { nextState, snapshot } = createTimerSnapshot(started, 31_000)
 
-    expect(snapshot.remainingMs).toBe(0)
-    expect(snapshot.isRunning).toBe(false)
-    expect(nextState.isRunning).toBe(false)
+    expect(snapshot.remainingMs).toBe(-10_000)
+    expect(snapshot.isRunning).toBe(true)
+    expect(nextState.isRunning).toBe(true)
   })
 
   test('set-alarms stores sorted unique elapsed timings', () => {

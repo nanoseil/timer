@@ -71,24 +71,14 @@ export function getRemainingMsAt(
   }
 
   const elapsedMs = Math.max(0, nowMs - state.startedAtMs)
-  return Math.max(0, state.remainingMs - elapsedMs)
+  return state.remainingMs - elapsedMs
 }
 
 export function normalizeTimerState(
   state: RoomTimerState,
-  nowMs: number,
+  _nowMs: number,
 ): RoomTimerState {
-  const remainingMs = getRemainingMsAt(state, nowMs)
-  if (!state.isRunning || remainingMs > 0) {
-    return state
-  }
-
-  return {
-    ...state,
-    isRunning: false,
-    startedAtMs: null,
-    remainingMs: 0,
-  }
+  return state
 }
 
 export type TimerCommand =

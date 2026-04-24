@@ -61,6 +61,12 @@ export function parseTimerClientMessage(raw: unknown): TimerClientMessage | null
 }
 
 export function formatDuration(remainingMs: number): string {
+  if (remainingMs < 0) {
+    const totalSeconds = Math.ceil(Math.abs(remainingMs) / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return `-${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
   const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000))
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
