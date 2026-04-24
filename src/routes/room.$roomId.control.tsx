@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { formatDuration } from '#/features/timer/protocol'
 import { useRoomTimer } from '#/features/timer/useRoomTimer'
@@ -15,26 +15,52 @@ function ControlPage() {
     'control',
   )
   const [minutesInput, setMinutesInput] = useState('5')
-  const [alarmMinutesInput, setAlarmMinutesInput] = useState('')
+  const [alarmMinuteInputs, setAlarmMinuteInputs] = useState([''])
 
   const parsedMinutes = useMemo(() => Number(minutesInput), [minutesInput])
   const canSetDuration = Number.isFinite(parsedMinutes) && parsedMinutes > 0
   const parsedAlarmMinutes = useMemo(() => {
-    const tokens = alarmMinutesInput
-      .split(',')
-      .map((part) => part.trim())
-      .filter((part) => part.length > 0)
-    if (tokens.length === 0) {
-      return []
+    const parsed: number[] = []
+    for (const alarmMinuteInput of alarmMinuteInputs) {
+      const trimmed = alarmMinuteInput.trim()
+      if (trimmed.length === 0) {
+        continue
+      }
+      const minutes = Number(trimmed)
+      if (!Number.isFinite(minutes) || minutes <= 0) {
+        return null
+      }
+      parsed.push(Math.round(minutes * 60_000))
     }
-
-    const parsed = tokens.map((value) => Number(value))
-    if (parsed.some((value) => !Number.isFinite(value) || value <= 0)) {
-      return null
+    return parsed
+  }, [alarmMinuteInputs])
+  const applyAlarmSettings = useCallback(() => {
+    if (parsedAlarmMinutes === null) {
+      return
     }
-    return parsed.map((minutes) => Math.round(minutes * 60_000))
-  }, [alarmMinutesInput])
-  const canSetAlarms = parsedAlarmMinutes !== null
+    sendCommand({
+      type: 'set-alarms',
+      elapsedMs: parsedAlarmMinutes,
+    })
+  }, [parsedAlarmMinutes, sendCommand])
+  const updateAlarmMinuteInput = (index: number, value: string) => {
+    setAlarmMinuteInputs((previous) =>
+      previous.map((previousValue, previousIndex) =>
+        previousIndex === index ? value : previousValue,
+      ),
+    )
+  }
+  const addAlarmMinuteInput = () => {
+    setAlarmMinuteInputs((previous) => [...previous, ''])
+  }
+  const removeAlarmMinuteInput = (index: number) => {
+    setAlarmMinuteInputs((previous) => {
+      if (previous.length <= 1) {
+        return ['']
+      }
+      return previous.filter((_, previousIndex) => previousIndex !== index)
+    })
+  }
   const activeAlarmLabel = useMemo(() => {
     if (!snapshot) {
       return '終了時'
@@ -42,6 +68,27 @@ function ControlPage() {
     const labels = snapshot.alarmElapsedMs.map((elapsedMs) => `${elapsedMs / 60_000}分`)
     return [...labels, '終了時'].join(' / ')
   }, [snapshot])
+  const timelineState = useMemo(() => {
+    if (!snapshot || remainingMs === null) {
+      return null
+    }
+
+    const totalDurationMs = snapshot.totalDurationMs
+    const clampedRemainingMs = Math.min(totalDurationMs, Math.max(0, remainingMs))
+    const elapsedMs = Math.max(0, totalDurationMs - clampedRemainingMs)
+    const progressRatio = totalDurationMs <= 0 ? 0 : elapsedMs / totalDurationMs
+    const alarmMarkers = snapshot.alarmElapsedMs.map((elapsedMs) => ({
+      elapsedMs,
+      progressPercent: (elapsedMs / totalDurationMs) * 100,
+    }))
+
+    return {
+      elapsedMs,
+      totalDurationMs,
+      progressPercent: Math.min(100, Math.max(0, progressRatio * 100)),
+      alarmMarkers,
+    }
+  }, [remainingMs, snapshot])
   const displayUrl = useMemo(() => {
     if (typeof window === 'undefined') {
       return ''
@@ -60,6 +107,48 @@ function ControlPage() {
             </p>
             <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
               {snapshot?.isRunning ? '進行中' : '停止中'} / 接続: {status}
+            </p>
+          </div>
+          <div className="mt-4">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+              <p>
+                進行状況:{' '}
+                {timelineState ? `${Math.round(timelineState.progressPercent)}%` : '--'}
+              </p>
+              <p>
+                {timelineState
+                  ? `${formatDuration(timelineState.elapsedMs)} / ${formatDuration(timelineState.totalDurationMs)}`
+                  : '--:-- / --:--'}
+              </p>
+            </div>
+            <div className="relative pt-4 pb-6">
+              <div className="absolute top-0 left-0 text-[10px] font-semibold tracking-wide text-slate-500 dark:text-slate-400">
+                START
+              </div>
+              <div className="absolute top-0 right-0 text-[10px] font-semibold tracking-wide text-slate-500 dark:text-slate-400">
+                END
+              </div>
+              <div className="relative h-10 rounded bg-slate-200 dark:bg-slate-700">
+                <div
+                  className="h-10 rounded-full bg-cyan-500/60 transition-[width] duration-200 dark:bg-cyan-400/70"
+                  style={{ width: `${timelineState?.progressPercent ?? 0}%` }}
+                />
+                {timelineState?.alarmMarkers.map((marker) => (
+                  <div
+                    key={marker.elapsedMs}
+                    className="absolute top-1/2 h-10 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-amber-500 bg-amber-300 dark:border-amber-300 dark:bg-amber-200"
+                    style={{ left: `${marker.progressPercent}%` }}
+                    title={`${marker.elapsedMs / 60_000}分`}
+                  />
+                ))}
+                <div
+                  className="absolute top-1/2 right-0 h-10 w-3 -translate-y-1/2 rounded-full border border-red-600 bg-red-500 dark:border-red-300 dark:bg-red-400"
+                  title="終了時"
+                />
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+              鳴動タイミング: {activeAlarmLabel}
             </p>
           </div>
         </section>
@@ -142,32 +231,51 @@ function ControlPage() {
                 鳴動タイミングを設定
               </h2>
               <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                カンマ区切りで分を指定します（例: 5,8）。終了時は常に鳴動します。
+                必要な分だけ入力欄を追加して分を指定します。終了時は常に鳴動します。
+              </p>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                入力欄のEnterまたはフォーカス解除で反映します。
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 現在: {activeAlarmLabel}
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <input
-                  value={alarmMinutesInput}
-                  onChange={(event) => setAlarmMinutesInput(event.target.value)}
-                  inputMode="decimal"
-                  placeholder="例: 5,8"
-                  className="w-36 border border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 outline-none ring-cyan-200 transition focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-cyan-500/40"
-                />
-                <button
-                  type="button"
-                  disabled={!canSetAlarms}
-                  onClick={() =>
-                    sendCommand({
-                      type: 'set-alarms',
-                      elapsedMs: parsedAlarmMinutes ?? [],
-                    })
-                  }
-                  className="border border-slate-300 bg-white px-5 py-3 text-lg font-bold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-                >
-                  反映
-                </button>
+              <div className="mt-3 grid gap-2">
+                {alarmMinuteInputs.map((alarmMinuteInput, index) => (
+                  <div key={index} className="flex flex-wrap items-center gap-2">
+                    <input
+                      value={alarmMinuteInput}
+                      onChange={(event) => updateAlarmMinuteInput(index, event.target.value)}
+                      onBlur={applyAlarmSettings}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault()
+                          applyAlarmSettings()
+                        }
+                      }}
+                      inputMode="decimal"
+                      placeholder="例: 5"
+                      className="w-36 border border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 outline-none ring-cyan-200 transition focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-cyan-500/40"
+                    />
+                    <span className="text-base text-slate-600 dark:text-slate-300">分</span>
+                    <button
+                      type="button"
+                      disabled={alarmMinuteInputs.length <= 1}
+                      onClick={() => removeAlarmMinuteInput(index)}
+                      className="border border-slate-300 bg-white px-3 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      削除
+                    </button>
+                  </div>
+                ))}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={addAlarmMinuteInput}
+                    className="border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+                    + 入力欄を追加
+                  </button>
+                </div>
               </div>
             </section>
 
