@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ClientRole, TimerServerMessage } from './protocol'
+import { formatDuration, type ClientRole, type TimerServerMessage } from './protocol'
 import type { TimerCommand, TimerSnapshot } from './timerState'
 
 function createWebSocketUrl(roomId: string, role: ClientRole): string | null {
@@ -248,6 +248,24 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
 
     previousRemainingMsRef.current = remainingMs
   }, [remainingMs, snapshot])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return
+    }
+
+    if (snapshot?.isRunning && remainingMs !== null) {
+      document.title = `${formatDuration(remainingMs)} - Presentation Timer`
+    } else {
+      document.title = 'Presentation Timer - Nanoseil'
+    }
+
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.title = 'Presentation Timer - Nanoseil'
+      }
+    }
+  }, [snapshot?.isRunning, remainingMs])
 
   return {
     snapshot,
