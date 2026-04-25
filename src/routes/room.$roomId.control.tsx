@@ -47,7 +47,7 @@ function parseDurationInputToMs(input: string): number | null {
 
 function ControlPage() {
   const { roomId } = Route.useParams()
-  const { remainingMs, snapshot, status, error, sendCommand } = useRoomTimer(
+  const { remainingMs, snapshot, status, error, sendCommand, sendChime } = useRoomTimer(
     roomId,
     'control',
   )
@@ -233,6 +233,13 @@ function ControlPage() {
                 className="border border-slate-300 bg-white px-4 py-4 text-lg font-bold text-slate-800 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
               >
                 -1分
+              </button>
+              <button
+                type="button"
+                onClick={sendChime}
+                className="col-span-2 border border-amber-300 bg-amber-100 px-4 py-4 text-lg font-bold text-amber-900 transition hover:bg-amber-200 md:col-span-1 dark:border-amber-700 dark:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-500/30"
+              >
+                チャイム
               </button>
             </div>
           </section>

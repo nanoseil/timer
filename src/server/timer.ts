@@ -102,6 +102,11 @@ export class TimerHandler extends DurableObject<Env> {
             return
         }
 
+        if (payload.type === 'chime') {
+            this.broadcastChime()
+            return
+        }
+
         this.timerState = applyTimerCommand(this.timerState, payload.command, Date.now())
         await this.ctx.storage.put(TIMER_STATE_KEY, this.timerState)
         this.broadcastSnapshot()
@@ -154,6 +159,19 @@ export class TimerHandler extends DurableObject<Env> {
         const payload = toPayload({
             type: 'snapshot',
             snapshot,
+        })
+
+        for (const socket of this.ctx.getWebSockets()) {
+            if (socket.readyState !== WebSocket.OPEN) {
+                continue
+            }
+            socket.send(payload)
+        }
+    }
+
+    private broadcastChime() {
+        const payload = toPayload({
+            type: 'chime',
         })
 
         for (const socket of this.ctx.getWebSockets()) {

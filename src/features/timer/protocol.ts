@@ -5,12 +5,17 @@ export type ClientRole = 'display' | 'control'
 export type TimerClientMessage = {
   type: 'command'
   command: TimerCommand
+} | {
+  type: 'chime'
 }
 
 export type TimerServerMessage =
   | {
     type: 'snapshot'
     snapshot: TimerSnapshot
+  }
+  | {
+    type: 'chime'
   }
   | {
     type: 'error'
@@ -46,18 +51,28 @@ function isTimerCommand(value: unknown): value is TimerCommand {
 }
 
 export function parseTimerClientMessage(raw: unknown): TimerClientMessage | null {
-  if (!isRecord(raw) || raw.type !== 'command') {
+  if (!isRecord(raw) || typeof raw.type !== 'string') {
     return null
   }
 
-  if (!isTimerCommand(raw.command)) {
-    return null
+  if (raw.type === 'chime') {
+    return {
+      type: 'chime',
+    }
   }
 
-  return {
-    type: 'command',
-    command: raw.command,
+  if (raw.type === 'command') {
+    if (!isTimerCommand(raw.command)) {
+      return null
+    }
+
+    return {
+      type: 'command',
+      command: raw.command,
+    }
   }
+
+  return null
 }
 
 export function formatDuration(remainingMs: number): string {
