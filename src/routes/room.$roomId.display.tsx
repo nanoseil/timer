@@ -88,7 +88,7 @@ function DisplayPage() {
           <p className="text-center text-base font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-2 sm:mb-4">
             ROOM {roomId}
           </p>
-          <div className={`flex items-center justify-center gap-4 sm:gap-6 md:gap-8 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[14rem] md:text-[18rem] lg:text-[22rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+          <div className={`flex items-center justify-center gap-4 sm:gap-6 md:gap-8 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
             {snapshot?.isRunning ? (
               <Play className="h-[0.7em] w-[0.7em] fill-cyan-500 text-cyan-500" aria-label="進行中" />
             ) : (
