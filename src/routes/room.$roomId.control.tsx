@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { formatDuration } from '#/features/timer/protocol'
 import { useRoomTimer } from '#/features/timer/useRoomTimer'
+import { Play, Pause } from 'lucide-react'
 
 export const Route = createFileRoute('/room/$roomId/control')({
   component: ControlPage,
@@ -145,9 +146,20 @@ function ControlPage() {
             <p className="text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400">
               ROOM {roomId}
             </p>
-            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-              {snapshot?.isRunning ? '進行中' : '停止中'} / 接続: {status}
-            </p>
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
+              {snapshot?.isRunning ? (
+                <>
+                  <Play className="h-4 w-4 fill-cyan-500 text-cyan-500" aria-label="進行中" />
+                  <span>進行中</span>
+                </>
+              ) : (
+                <>
+                  <Pause className="h-4 w-4 fill-slate-500 text-slate-500" aria-label="停止中" />
+                  <span>停止中</span>
+                </>
+              )}
+              <span className="ml-1">/ 接続: {status}</span>
+            </div>
           </div>
           <div className="mt-4">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -195,9 +207,16 @@ function ControlPage() {
 
         <div className="grid flex-1 gap-6 pt-6 xl:grid-cols-[2fr_1fr]">
           <section className="sm:pr-8 xl:border-r xl:border-slate-300 xl:pr-6 xl:dark:border-slate-700">
-            <p className={`text-center text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[10rem] xl:text-[11rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
-              {remainingMs === null ? '--:--' : formatDuration(remainingMs)}
-            </p>
+            <div className={`flex items-center justify-center gap-4 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[10rem] xl:text-[11rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+              {snapshot?.isRunning ? (
+                <Play className="h-[0.7em] w-[0.7em] fill-cyan-500 text-cyan-500" aria-label="進行中" />
+              ) : (
+                <Pause className="h-[0.7em] w-[0.7em] fill-slate-400 text-slate-400 dark:fill-slate-600 dark:text-slate-600" aria-label="停止中" />
+              )}
+              <p>
+                {remainingMs === null ? '--:--' : formatDuration(remainingMs)}
+              </p>
+            </div>
             <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5">
               <button
                 type="button"
