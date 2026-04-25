@@ -4,6 +4,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { formatDuration } from '#/features/timer/protocol'
 import { useRoomTimer } from '#/features/timer/useRoomTimer'
 import { Play, Pause } from 'lucide-react'
+import Footer from '#/components/Footer'
 
 export const Route = createFileRoute('/room/$roomId/control')({
   component: ControlPage,
@@ -206,7 +207,7 @@ function ControlPage() {
         </section>
 
         <div className="grid flex-1 gap-6 pt-6 xl:grid-cols-[2fr_1fr]">
-          <section className="sm:pr-8 xl:border-r xl:border-slate-300 xl:pr-6 xl:dark:border-slate-700">
+          <section className="flex flex-col sm:pr-8 xl:border-r xl:border-slate-300 xl:pr-6 xl:dark:border-slate-700">
             <div className={`flex items-center justify-center gap-4 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[10rem] xl:text-[11rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
               {snapshot?.isRunning ? (
                 <Play className="h-[0.7em] w-[0.7em] fill-cyan-500 text-cyan-500" aria-label="進行中" />
@@ -260,6 +261,9 @@ function ControlPage() {
               >
                 チャイム
               </button>
+            </div>
+            <div className="mt-auto">
+              <Footer />
             </div>
           </section>
 

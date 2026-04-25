@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
+import Footer from '../components/Footer'
 
 export const Route = createFileRoute('/')({ component: App })
 
@@ -22,7 +23,7 @@ function App() {
   const cleanNewRoomId = sanitizeRoomId(newRoomId)
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
+    <main className="mx-auto flex flex-col min-h-screen w-full max-w-3xl px-4 py-10">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
         <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
           Presentation Timer
@@ -101,6 +102,8 @@ function App() {
           </section>
         </div>
       </section>
+      <div className="flex-1" />
+      <Footer />
     </main>
   )
 }
