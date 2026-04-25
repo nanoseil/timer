@@ -135,10 +135,33 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
     if (!snapshot?.isRunning) {
       return
     }
-    const intervalId = window.setInterval(() => {
+
+    const workerCode = `
+      let intervalId = null;
+      self.onmessage = function(e) {
+        if (e.data === 'start') {
+          intervalId = setInterval(function() {
+            self.postMessage('tick');
+          }, 200);
+        } else if (e.data === 'stop') {
+          if (intervalId) clearInterval(intervalId);
+        }
+      };
+    `
+    const blob = new Blob([workerCode], { type: 'application/javascript' })
+    const workerUrl = URL.createObjectURL(blob)
+    const worker = new Worker(workerUrl)
+
+    worker.onmessage = () => {
       setNowMs(Date.now())
-    }, 200)
-    return () => window.clearInterval(intervalId)
+    }
+    worker.postMessage('start')
+
+    return () => {
+      worker.postMessage('stop')
+      worker.terminate()
+      URL.revokeObjectURL(workerUrl)
+    }
   }, [snapshot?.isRunning])
 
   const sendCommand = useCallback((command: TimerCommand) => {
