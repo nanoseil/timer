@@ -71,24 +71,7 @@ export function getRemainingMsAt(
   }
 
   const elapsedMs = Math.max(0, nowMs - state.startedAtMs)
-  return Math.max(0, state.remainingMs - elapsedMs)
-}
-
-export function normalizeTimerState(
-  state: RoomTimerState,
-  nowMs: number,
-): RoomTimerState {
-  const remainingMs = getRemainingMsAt(state, nowMs)
-  if (!state.isRunning || remainingMs > 0) {
-    return state
-  }
-
-  return {
-    ...state,
-    isRunning: false,
-    startedAtMs: null,
-    remainingMs: 0,
-  }
+  return state.remainingMs - elapsedMs
 }
 
 export type TimerCommand =
@@ -104,11 +87,11 @@ export function applyTimerCommand(
   command: TimerCommand,
   nowMs: number,
 ): RoomTimerState {
-  const normalized = normalizeTimerState(state, nowMs)
+  const normalized = state
 
   switch (command.type) {
     case 'start': {
-      if (normalized.isRunning || normalized.remainingMs <= 0) {
+      if (normalized.isRunning) {
         return normalized
       }
 
@@ -226,18 +209,17 @@ export function createTimerSnapshot(
   state: RoomTimerState,
   nowMs: number,
 ): { nextState: RoomTimerState; snapshot: TimerSnapshot } {
-  const nextState = normalizeTimerState(state, nowMs)
-  const remainingMs = getRemainingMsAt(nextState, nowMs)
+  const remainingMs = getRemainingMsAt(state, nowMs)
 
   return {
-    nextState,
-      snapshot: {
-        totalDurationMs: nextState.totalDurationMs,
-        remainingMs,
-        isRunning: nextState.isRunning,
-        alarmElapsedMs: nextState.alarmElapsedMs,
-        revision: nextState.revision,
-        serverNowMs: nowMs,
-      },
+    nextState: state,
+    snapshot: {
+      totalDurationMs: state.totalDurationMs,
+      remainingMs,
+      isRunning: state.isRunning,
+      alarmElapsedMs: state.alarmElapsedMs,
+      revision: state.revision,
+      serverNowMs: nowMs,
+    },
   }
 }

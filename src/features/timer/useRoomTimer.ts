@@ -16,7 +16,7 @@ function computeRemainingMs(snapshot: TimerSnapshot, nowMs: number): number {
   if (!snapshot.isRunning) {
     return snapshot.remainingMs
   }
-  return Math.max(0, snapshot.remainingMs - Math.max(0, nowMs - snapshot.serverNowMs))
+  return snapshot.remainingMs - Math.max(0, nowMs - snapshot.serverNowMs)
 }
 
 function playAlarmSound() {
@@ -24,30 +24,11 @@ function playAlarmSound() {
     return
   }
 
-  const AudioContextCtor = window.AudioContext
-  if (!AudioContextCtor) {
-    return
-  }
-
-  try {
-    const context = new AudioContextCtor()
-    const oscillator = context.createOscillator()
-    const gain = context.createGain()
-    oscillator.type = 'sine'
-    oscillator.frequency.value = 880
-    gain.gain.value = 0.2
-    oscillator.connect(gain)
-    gain.connect(context.destination)
-    oscillator.start()
-    oscillator.stop(context.currentTime + 0.2)
-    oscillator.addEventListener('ended', () => {
-      context.close().catch(() => {
-        // ignore close failures; alarm playback already finished
-      })
-    })
-  } catch {
-    // ignore
-  }
+  const audio = new Audio('/bell.mp3')
+  audio.currentTime = 0
+  audio.play().catch(() => {
+    // ignore playback failures (e.g. autoplay restrictions)
+  })
 }
 
 export type ConnectionStatus = 'connecting' | 'open' | 'closed'
@@ -115,6 +96,11 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
           return
         }
 
+        if (payload.type === 'chime') {
+          playAlarmSound()
+          return
+        }
+
         setError(payload.message)
       })
 
@@ -166,6 +152,20 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
       JSON.stringify({
         type: 'command',
         command,
+      }),
+    )
+  }, [])
+
+  const sendChime = useCallback(() => {
+    const socket = socketRef.current
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      setError('接続中のため操作できません。')
+      return
+    }
+
+    socket.send(
+      JSON.stringify({
+        type: 'chime',
       }),
     )
   }, [])
@@ -232,5 +232,6 @@ export function useRoomTimer(roomId: string, role: ClientRole) {
     status,
     error,
     sendCommand,
+    sendChime,
   }
 }

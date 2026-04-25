@@ -47,7 +47,7 @@ function parseDurationInputToMs(input: string): number | null {
 
 function ControlPage() {
   const { roomId } = Route.useParams()
-  const { remainingMs, snapshot, status, error, sendCommand } = useRoomTimer(
+  const { remainingMs, snapshot, status, error, sendCommand, sendChime } = useRoomTimer(
     roomId,
     'control',
   )
@@ -195,7 +195,7 @@ function ControlPage() {
 
         <div className="grid flex-1 gap-6 pt-6 xl:grid-cols-[2fr_1fr]">
           <section className="sm:pr-8 xl:border-r xl:border-slate-300 xl:pr-6 xl:dark:border-slate-700">
-            <p className="text-center text-[18vw] leading-none font-extrabold tracking-tight text-slate-900 tabular-nums sm:text-[10rem] xl:text-[11rem] dark:text-slate-100">
+            <p className={`text-center text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[10rem] xl:text-[11rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
               {remainingMs === null ? '--:--' : formatDuration(remainingMs)}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -233,6 +233,13 @@ function ControlPage() {
                 className="border border-slate-300 bg-white px-4 py-4 text-lg font-bold text-slate-800 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
               >
                 -1分
+              </button>
+              <button
+                type="button"
+                onClick={sendChime}
+                className="col-span-2 border border-amber-300 bg-amber-100 px-4 py-4 text-lg font-bold text-amber-900 transition hover:bg-amber-200 md:col-span-1 dark:border-amber-700 dark:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-500/30"
+              >
+                チャイム
               </button>
             </div>
           </section>

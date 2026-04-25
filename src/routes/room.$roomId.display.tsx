@@ -16,7 +16,7 @@ function DisplayPage() {
         <p className="text-center text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400">
           ROOM {roomId}
         </p>
-        <p className="text-center text-[20vw] leading-none font-extrabold tracking-tight text-slate-900 tabular-nums sm:text-[16rem] dark:text-slate-100">
+        <p className={`text-center text-[20vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[16rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
           {remainingMs === null ? '--:--' : formatDuration(remainingMs)}
         </p>
         <p className="text-center text-xl font-semibold text-slate-700 dark:text-slate-200">
