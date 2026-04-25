@@ -10,6 +10,7 @@ import {
 import { DurableObject } from 'cloudflare:workers'
 
 const TIMER_STATE_KEY = 'timer-state'
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
 function toPayload(message: TimerServerMessage): string {
     return JSON.stringify(message)
@@ -74,6 +75,9 @@ export class TimerHandler extends DurableObject<Env> {
         this.ctx.acceptWebSocket(server, [role])
         this.emitSnapshot(server)
 
+        // Extend the TTL immediately following every fetch request
+        await this.ctx.storage.setAlarm(Date.now() + ONE_WEEK_MS)
+
         return new Response(null, { status: 101, webSocket: client })
     }
 
@@ -104,25 +108,22 @@ export class TimerHandler extends DurableObject<Env> {
 
         if (payload.type === 'chime') {
             this.broadcastChime()
+            await this.ctx.storage.setAlarm(Date.now() + ONE_WEEK_MS)
             return
         }
 
         this.timerState = applyTimerCommand(this.timerState, payload.command, Date.now())
-        await this.ctx.storage.put(TIMER_STATE_KEY, this.timerState)
+        await Promise.all([
+            this.ctx.storage.put(TIMER_STATE_KEY, this.timerState),
+            this.ctx.storage.setAlarm(Date.now() + ONE_WEEK_MS),
+        ])
         this.broadcastSnapshot()
     }
 
-    async webSocketClose() {
-        if (this.ctx.getWebSockets().length === 0) {
-            await this.ctx.storage.delete(TIMER_STATE_KEY)
-        }
+    async alarm() {
+        await this.ctx.storage.deleteAll()
     }
 
-    async webSocketError() {
-        if (this.ctx.getWebSockets().length === 0) {
-            await this.ctx.storage.delete(TIMER_STATE_KEY)
-        }
-    }
 
     private sendError(target: WebSocket, message: string) {
         if (target.readyState !== WebSocket.OPEN) {
