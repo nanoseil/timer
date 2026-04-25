@@ -15,6 +15,14 @@ function DisplayPage() {
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isFullscreenSupported, setIsFullscreenSupported] = useState(false)
+  const [isPopupVisible, setIsPopupVisible] = useState(true)
+
+  const handleClosePopup = () => {
+    setIsPopupVisible(false)
+    const audio = new Audio('/bell.mp3')
+    audio.volume = 0.01 // 極小音量で再生
+    audio.play().catch(() => {})
+  }
 
   useEffect(() => {
     setIsFullscreenSupported(
@@ -73,6 +81,26 @@ function DisplayPage() {
 
   return (
     <>
+      {isPopupVisible && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl bg-white p-8 shadow-2xl dark:bg-slate-900">
+            <div className="text-center">
+              <h2 className="mb-3 text-xl font-bold text-slate-900 dark:text-slate-100">
+                音声再生の許可
+              </h2>
+              <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                バックグラウンドでもアラーム音を鳴らすために、閉じるボタンを押してください。
+              </p>
+            </div>
+            <button
+              onClick={handleClosePopup}
+              className="w-full rounded-full bg-cyan-500 px-8 py-3.5 text-sm font-bold tracking-wide text-white transition-all hover:bg-cyan-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 active:scale-[0.98] dark:focus:ring-offset-slate-900"
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      )}
       {isFullscreenSupported && (
         <button
           onClick={toggleFullscreen}
