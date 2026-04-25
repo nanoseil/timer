@@ -51,7 +51,7 @@ function ControlPage() {
     roomId,
     'control',
   )
-  const [minutesInput, setMinutesInput] = useState('5')
+  const [minutesInput, setMinutesInput] = useState('5:00')
   const [alarmMinuteInputs, setAlarmMinuteInputs] = useState([''])
 
   const parsedDurationMs = useMemo(
@@ -254,7 +254,7 @@ function ControlPage() {
                   value={minutesInput}
                   onChange={(event) => setMinutesInput(event.target.value)}
                   inputMode="text"
-                  placeholder="例: 05:00 (または 5分)"
+                  placeholder="例: 05:00"
                   className="w-36 border border-slate-300 bg-white px-4 py-3 text-lg text-slate-900 outline-none ring-cyan-200 transition focus:ring-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-cyan-500/40"
                 />
                 <button
