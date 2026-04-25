@@ -9,13 +9,13 @@ export type TimerClientMessage = {
 
 export type TimerServerMessage =
   | {
-      type: 'snapshot'
-      snapshot: TimerSnapshot
-    }
+    type: 'snapshot'
+    snapshot: TimerSnapshot
+  }
   | {
-      type: 'error'
-      message: string
-    }
+    type: 'error'
+    message: string
+  }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -62,11 +62,12 @@ export function parseTimerClientMessage(raw: unknown): TimerClientMessage | null
 
 export function formatDuration(remainingMs: number): string {
   if (remainingMs < 0) {
-    const totalSeconds = Math.ceil(Math.abs(remainingMs) / 1000)
+    const totalSeconds = Math.floor(Math.abs(remainingMs) / 1000)
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
-    return `-${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+    return `${remainingMs < -1000 ? '-' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   }
+
   const totalSeconds = Math.ceil(remainingMs / 1000)
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60

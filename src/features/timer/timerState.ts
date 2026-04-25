@@ -91,7 +91,7 @@ export function applyTimerCommand(
 
   switch (command.type) {
     case 'start': {
-      if (normalized.isRunning || normalized.remainingMs <= 0) {
+      if (normalized.isRunning) {
         return normalized
       }
 
@@ -213,13 +213,13 @@ export function createTimerSnapshot(
 
   return {
     nextState: state,
-      snapshot: {
-        totalDurationMs: state.totalDurationMs,
-        remainingMs,
-        isRunning: state.isRunning,
-        alarmElapsedMs: state.alarmElapsedMs,
-        revision: state.revision,
-        serverNowMs: nowMs,
-      },
+    snapshot: {
+      totalDurationMs: state.totalDurationMs,
+      remainingMs,
+      isRunning: state.isRunning,
+      alarmElapsedMs: state.alarmElapsedMs,
+      revision: state.revision,
+      serverNowMs: nowMs,
+    },
   }
 }
