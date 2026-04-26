@@ -17,19 +17,19 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Presentation Timer | スマホをリモコンにするブラウザ同期タイマー',
+        title: 'RemoTime | スマホをリモコンにする同期プレゼンタイマー',
       },
       {
         name: 'description',
-        content: 'インストールの不要、登録不要ですぐに使える同期型プレゼンテーションタイマー。勉強会やLTで、手元のスマートフォンから操作を完全にコントロール。',
+        content: 'インストール不要、登録不要ですぐに使える同期型プレゼンテーションタイマー。勉強会やLTで、手元のスマートフォンから操作を完全にコントロール。複数デバイスでの同時表示も可能。',
       },
       {
         property: 'og:title',
-        content: 'Presentation Timer | スマホをリモコンにするブラウザ同期タイマー',
+        content: 'RemoTime | スマホをリモコンにする同期プレゼンタイマー',
       },
       {
         property: 'og:description',
-        content: 'インストール不要・登録不要ですぐに使える同期型プレゼンテーションタイマー。',
+        content: 'インストール不要・登録不要ですぐに使える同期型プレゼンテーションタイマー。複数デバイスでの同時表示も可能。',
       },
       {
         property: 'og:type',
