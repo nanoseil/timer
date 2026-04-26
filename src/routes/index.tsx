@@ -35,9 +35,9 @@ function App() {
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-slate-600 dark:text-slate-300 mb-8 leading-relaxed">
           Presentation Timerは、インストール不要ですぐに使える同期型タイマーです。<br className="hidden sm:block" />
-          勉強会やライトニングトークで、手元のスマホから時間をコントロールしよう。
+          勉強会やライトニングトークで、手元の端末から時間をコントロールしよう。
         </p>
-        
+
         <div className="flex flex-wrap justify-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
           <div className="flex items-center gap-1.5 bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 px-4 py-2 rounded-full transition-transform hover:-translate-y-0.5">
             <svg className="w-4 h-4 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -90,6 +90,7 @@ function App() {
                 新しいルームIDを作成して、表示用・操作用のリンクを取得します。
               </p>
               <button
+                id="create-room-btn"
                 type="button"
                 onClick={() => setNewRoomId(createRoomId())}
                 className="w-full rounded-xl border border-transparent bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-cyan-700 shadow-sm dark:bg-cyan-600 dark:hover:bg-cyan-500"
@@ -106,6 +107,7 @@ function App() {
                   </p>
                   <div className="flex flex-col gap-2 pt-2">
                     <a
+                      id="create-room-display-link"
                       href={`/room/${cleanNewRoomId}/display`}
                       target="_blank"
                       rel="noreferrer"
@@ -117,6 +119,7 @@ function App() {
                       表示画面を開く
                     </a>
                     <a
+                      id="create-room-control-link"
                       href={`/room/${cleanNewRoomId}/control`}
                       target="_blank"
                       rel="noreferrer"
@@ -147,10 +150,11 @@ function App() {
               </p>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <label htmlFor="join-room-input" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     ルームID
                   </label>
                   <input
+                    id="join-room-input"
                     value={joinRoomId}
                     onChange={(event) => setJoinRoomId(event.target.value)}
                     placeholder="例: 9f2a4b1c"
@@ -159,6 +163,7 @@ function App() {
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <a
+                    id="join-room-display-link"
                     href={cleanJoinRoomId ? `/room/${cleanJoinRoomId}/display` : '#'}
                     target="_blank"
                     rel="noreferrer"
@@ -167,6 +172,7 @@ function App() {
                     表示画面
                   </a>
                   <a
+                    id="join-room-control-link"
                     href={cleanJoinRoomId ? `/room/${cleanJoinRoomId}/control` : '#'}
                     target="_blank"
                     rel="noreferrer"

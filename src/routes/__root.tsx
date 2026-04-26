@@ -17,7 +17,23 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Presentation Timer - Nanoseil',
+        title: 'Presentation Timer | スマホをリモコンにするブラウザ同期タイマー',
+      },
+      {
+        name: 'description',
+        content: 'インストールの不要、登録不要ですぐに使える同期型プレゼンテーションタイマー。勉強会やLTで、手元のスマートフォンから操作を完全にコントロール。',
+      },
+      {
+        property: 'og:title',
+        content: 'Presentation Timer | スマホをリモコンにするブラウザ同期タイマー',
+      },
+      {
+        property: 'og:description',
+        content: 'インストール不要・登録不要ですぐに使える同期型プレゼンテーションタイマー。',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
       },
     ],
     links: [
@@ -40,7 +56,7 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ja" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />

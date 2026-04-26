@@ -7,6 +7,11 @@ import Footer from '#/components/Footer'
 
 export const Route = createFileRoute('/room/$roomId/display')({
   component: DisplayPage,
+  head: ({ params }) => ({
+    meta: [
+      { title: `ROOM ${params.roomId} - 表示画面 | Presentation Timer` }
+    ]
+  }),
 })
 
 function DisplayPage() {

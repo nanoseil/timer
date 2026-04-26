@@ -8,6 +8,11 @@ import Footer from '#/components/Footer'
 
 export const Route = createFileRoute('/room/$roomId/control')({
   component: ControlPage,
+  head: ({ params }) => ({
+    meta: [
+      { title: `ROOM ${params.roomId} - 操作画面 | Presentation Timer` }
+    ]
+  }),
 })
 
 function parseDurationInputToMs(input: string): number | null {
