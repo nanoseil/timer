@@ -6,6 +6,7 @@ import { useRoomTimer } from '#/features/timer/useRoomTimer'
 import { useTimerPip } from '#/features/timer/useTimerPip'
 import { Play, Pause, Tv } from 'lucide-react'
 import Footer from '#/components/Footer'
+import { cn } from '#/utils/cn'
 
 export const Route = createFileRoute('/room/$roomId/control')({
   component: ControlPage,
@@ -158,7 +159,12 @@ function ControlPage() {
               {isPipSupported && (
                 <button
                   onClick={togglePip}
-                  className={`p-2 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 ${isPipActive ? 'text-cyan-500 hover:text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                  className={cn(
+                    'p-2 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500',
+                    isPipActive
+                      ? 'text-cyan-500 hover:text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30'
+                      : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  )}
                   aria-label={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
                   title={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
                 >
@@ -227,7 +233,12 @@ function ControlPage() {
 
         <div className="grid flex-1 gap-6 pt-6 xl:grid-cols-[2fr_1fr]">
           <section className="flex flex-col sm:pr-8 xl:border-r xl:border-slate-300 xl:pr-6 xl:dark:border-slate-700">
-            <div className={`flex items-center justify-center gap-4 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[10rem] xl:text-[11rem] ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+            <div className={cn(
+              'flex items-center justify-center gap-4 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums sm:text-[10rem] xl:text-[11rem]',
+              remainingMs !== null && remainingMs < 0
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-slate-900 dark:text-slate-100'
+            )}>
               {snapshot?.isRunning ? (
                 <Play className="h-[0.7em] w-[0.7em] fill-cyan-500 text-cyan-500" aria-label="進行中" />
               ) : (

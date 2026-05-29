@@ -5,6 +5,7 @@ import { useRoomTimer } from '#/features/timer/useRoomTimer'
 import { useTimerPip } from '#/features/timer/useTimerPip'
 import { Play, Pause, Maximize, Minimize, Tv } from 'lucide-react'
 import Footer from '#/components/Footer'
+import { cn } from '#/utils/cn'
 
 export const Route = createFileRoute('/room/$roomId/display')({
   component: DisplayPage,
@@ -113,7 +114,12 @@ function DisplayPage() {
         {isPipSupported && (
           <button
             onClick={togglePip}
-            className={`p-3 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 ${isPipActive ? 'text-cyan-500 hover:text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+            className={cn(
+              'p-3 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500',
+              isPipActive
+                ? 'text-cyan-500 hover:text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30'
+                : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            )}
             aria-label={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
             title={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
           >
@@ -132,8 +138,6 @@ function DisplayPage() {
         )}
       </div>
       <main className="flex min-h-[100dvh] w-fit mx-auto flex-col items-center justify-center p-4 sm:p-8 md:p-12 relative bg-white dark:bg-slate-950">
-
-
         <div className="flex w-full max-w-7xl flex-col items-center justify-center gap-8 md:gap-12 lg:gap-16">
           <div className="flex w-full flex-col items-center">
             <div className="flex gap-4 text-center text-base font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-2 sm:mb-4">
@@ -152,7 +156,12 @@ function DisplayPage() {
                 ) : null}
               </div>
             </div>
-            <div className={`flex items-center justify-center gap-4 sm:gap-6 md:gap-8 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums ${remainingMs !== null && remainingMs < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+            <div className={cn(
+              'flex items-center justify-center gap-4 sm:gap-6 md:gap-8 text-[18vw] leading-none font-extrabold tracking-tight tabular-nums',
+              remainingMs !== null && remainingMs < 0
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-slate-900 dark:text-slate-100'
+            )}>
               {snapshot?.isRunning ? (
                 <Play className="h-[0.7em] w-[0.7em] fill-cyan-500 text-cyan-500" aria-label="進行中" />
               ) : (
