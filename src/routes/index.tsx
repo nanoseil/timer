@@ -57,6 +57,13 @@ function App() {
             </svg>
             リアルタイム同期
           </div>
+          <div className="flex items-center gap-1.5 bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700 px-4 py-2 rounded-full transition-transform hover:-translate-y-0.5">
+            <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <rect x="2" y="4" width="20" height="16" rx="2" strokeWidth={2} />
+              <rect x="13" y="11" width="7" height="7" rx="1" strokeWidth={2} />
+            </svg>
+            他の画面に重ねて常に表示
+          </div>
         </div>
       </section>
 
@@ -188,7 +195,7 @@ function App() {
       </section>
 
       {/* Features Detail Section */}
-      <section className="grid md:grid-cols-3 gap-6 sm:gap-8 mb-16 max-w-5xl mx-auto">
+      <section className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-16 max-w-5xl mx-auto">
         <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 shadow-sm transition hover:shadow-md hover:-translate-y-1 group">
           <div className="w-12 h-12 inline-flex items-center justify-center rounded-xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 mb-5 transition-transform group-hover:scale-110">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,6 +227,18 @@ function App() {
           <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">リアルタイム同期</h3>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
             最新のWeb技術を使用し、操作端末と表示端末でミリ秒単位でのタイマー同期を実現。ズレのない快適な進行をサポートします。
+          </p>
+        </div>
+        <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 shadow-sm transition hover:shadow-md hover:-translate-y-1 group">
+          <div className="w-12 h-12 inline-flex items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 mb-5 transition-transform group-hover:scale-110">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <rect x="2" y="4" width="20" height="16" rx="2" strokeWidth={2} />
+              <rect x="13" y="11" width="7" height="7" rx="1" fill="currentColor" className="text-amber-500/20" strokeWidth={2} />
+            </svg>
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">他の画面に重ねて常に表示</h3>
+          <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+            表示画面・操作画面のどちらからでも、タイマーを他のアプリやブラウザ画面の上に重ねて常に最前面に表示できます。スライドの編集やメモの確認中も残り時間を見逃しません。
           </p>
         </div>
       </section>

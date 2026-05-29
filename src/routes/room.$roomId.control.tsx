@@ -1,9 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { formatDuration } from '#/features/timer/protocol'
 import { useRoomTimer } from '#/features/timer/useRoomTimer'
-import { Play, Pause } from 'lucide-react'
+import { useTimerPip } from '#/features/timer/useTimerPip'
+import { Play, Pause, Tv } from 'lucide-react'
 import Footer from '#/components/Footer'
 
 export const Route = createFileRoute('/room/$roomId/control')({
@@ -60,6 +61,7 @@ function ControlPage() {
   )
   const [minutesInput, setMinutesInput] = useState('5:00')
   const [alarmMinuteInputs, setAlarmMinuteInputs] = useState([''])
+  const { isPipSupported, isPipActive, togglePip } = useTimerPip(roomId, remainingMs, snapshot, status)
 
   const parsedDurationMs = useMemo(
     () => parseDurationInputToMs(minutesInput),
@@ -152,19 +154,31 @@ function ControlPage() {
             <p className="text-sm font-semibold tracking-wide text-slate-500 dark:text-slate-400">
               ROOM {roomId}
             </p>
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300">
-              {snapshot?.isRunning ? (
-                <>
-                  <Play className="h-4 w-4 fill-cyan-500 text-cyan-500" aria-label="進行中" />
-                  <span>進行中</span>
-                </>
-              ) : (
-                <>
-                  <Pause className="h-4 w-4 fill-slate-500 text-slate-500" aria-label="停止中" />
-                  <span>停止中</span>
-                </>
+            <div className="flex items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+              {isPipSupported && (
+                <button
+                  onClick={togglePip}
+                  className={`p-2 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 ${isPipActive ? 'text-cyan-500 hover:text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                  aria-label={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
+                  title={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
+                >
+                  <Tv className="h-5 w-5" />
+                </button>
               )}
-              <span className="ml-1">/ 接続: {status}</span>
+              <div className="flex items-center gap-1.5">
+                {snapshot?.isRunning ? (
+                  <>
+                    <Play className="h-4 w-4 fill-cyan-500 text-cyan-500" aria-label="進行中" />
+                    <span>進行中</span>
+                  </>
+                ) : (
+                  <>
+                    <Pause className="h-4 w-4 fill-slate-500 text-slate-500" aria-label="停止中" />
+                    <span>停止中</span>
+                  </>
+                )}
+                <span className="ml-1">/ 接続: {status}</span>
+              </div>
             </div>
           </div>
           <div className="mt-4">

@@ -2,7 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState, useEffect } from 'react'
 import { formatDuration } from '#/features/timer/protocol'
 import { useRoomTimer } from '#/features/timer/useRoomTimer'
-import { Play, Pause, Maximize, Minimize } from 'lucide-react'
+import { useTimerPip } from '#/features/timer/useTimerPip'
+import { Play, Pause, Maximize, Minimize, Tv } from 'lucide-react'
 import Footer from '#/components/Footer'
 
 export const Route = createFileRoute('/room/$roomId/display')({
@@ -17,6 +18,7 @@ export const Route = createFileRoute('/room/$roomId/display')({
 function DisplayPage() {
   const { roomId } = Route.useParams()
   const { remainingMs, snapshot, status, error } = useRoomTimer(roomId, 'display')
+  const { isPipSupported, isPipActive, togglePip } = useTimerPip(roomId, remainingMs, snapshot, status)
 
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isFullscreenSupported, setIsFullscreenSupported] = useState(false)
@@ -41,6 +43,7 @@ function DisplayPage() {
     }
 
     document.addEventListener('fullscreenchange', handleFullscreenChange)
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
@@ -106,16 +109,28 @@ function DisplayPage() {
           </div>
         </div>
       )}
-      {isFullscreenSupported && (
-        <button
-          onClick={toggleFullscreen}
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 p-3 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-          aria-label={isFullscreen ? 'フルスクリーン解除' : 'フルスクリーン表示'}
-          title={isFullscreen ? 'フルスクリーン解除' : 'フルスクリーン表示'}
-        >
-          {isFullscreen ? <Minimize className="h-6 w-6 sm:h-8 sm:w-8" /> : <Maximize className="h-6 w-6 sm:h-8 sm:w-8" />}
-        </button>
-      )}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 flex gap-2 items-center z-40">
+        {isPipSupported && (
+          <button
+            onClick={togglePip}
+            className={`p-3 transition-colors rounded-full focus:outline-none focus:ring-2 focus:ring-cyan-500 ${isPipActive ? 'text-cyan-500 hover:text-cyan-600 bg-cyan-50 dark:bg-cyan-950/30' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+            aria-label={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
+            title={isPipActive ? 'Picture-in-Picture解除' : 'Picture-in-Picture表示'}
+          >
+            <Tv className="h-6 w-6 sm:h-8 sm:w-8" />
+          </button>
+        )}
+        {isFullscreenSupported && (
+          <button
+            onClick={toggleFullscreen}
+            className="p-3 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            aria-label={isFullscreen ? 'フルスクリーン解除' : 'フルスクリーン表示'}
+            title={isFullscreen ? 'フルスクリーン解除' : 'フルスクリーン表示'}
+          >
+            {isFullscreen ? <Minimize className="h-6 w-6 sm:h-8 sm:w-8" /> : <Maximize className="h-6 w-6 sm:h-8 sm:w-8" />}
+          </button>
+        )}
+      </div>
       <main className="flex min-h-[100dvh] w-fit mx-auto flex-col items-center justify-center p-4 sm:p-8 md:p-12 relative bg-white dark:bg-slate-950">
 
 
